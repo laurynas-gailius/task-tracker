@@ -1,34 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Tasks from "./components/Tasks";
 import AddTask from "./components/AddTask";
+import { FaSketch } from "react-icons/fa";
 
 function App() {
   const [showAddTasks, setShowAddTasks] = useState(false)
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      text: 'Doctors appointment',
-      day: 'Feb 5th',
-      reminder: true
-    },
-    {
-      id: 2,
-      text: 'Haircut',
-      day: 'Feb 6th',
-      reminder: true
-    },
-    {
-      id: 3,
-      text: 'Gym',
-      day: 'Feb 7th',
-      reminder: true
-    },
-  ])
+  const [tasks, setTasks] = useState([])
+
+  useEffect(() => {
+    const getTasks = async () => {
+      const tasksFromServer = await fetchTasks()
+      setTasks(tasksFromServer)
+    }
+    getTasks()  
+  }, [])
+
+  // Fetch tasks
+
+  const fetchTasks = async () => {
+    const res = await fetch('http://localhost:8000/tasks')
+
+    const data = await res.json()
+    
+    return data
+  }
+ 
 
   // Delete task
 
-  const deleteTasks = (id) => {
+  const deleteTasks = async (id) => {
+    await fetch(`http://localhost:8000/tasks/${id}`, {
+      method: 'DELETE'
+    })
+
     setTasks(tasks.filter(task => task.id !== id))
   }
 
@@ -38,16 +43,28 @@ function App() {
 
   // Add task
 
-  const addTask = (task) => {
-    const id = Math.floor(Math.random() * 10000 + 1)
-    const newTask = {id, ...task}
-    setTasks([...tasks, newTask])
+  const addTask = async (task) => {
+    const res = await fetch('http://localhost:8000/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: JSON.stringify(task),
+    })
+
+    const data = await res.json()
+
+    setTasks([...tasks, data])
+
+    // const id = Math.floor(Math.random() * 10000 + 1)
+    // const newTask = {id, ...task}
+    // setTasks([...tasks, newTask])
   }
  
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-4 border rounded-md">
-      <Header onShow={() => setShowAddTasks(!showAddTasks)} />
+      <Header onShow={() => setShowAddTasks(!showAddTasks)}  showAddTasks={showAddTasks}/>
       {showAddTasks && <AddTask onAdd={addTask}/>}
       {tasks.length > 0 ? 
       ( <Tasks tasks={tasks} onDelete={deleteTasks} onToggle={toggleReminder}/> 

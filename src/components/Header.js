@@ -1,13 +1,13 @@
 import Button from "./Button"
 
 
-const Header = ({ onShow }) => {
+const Header = ({ onShow, showAddTasks }) => {
 
 
   return (
     <header className="flex justify-between items-center pb-4">
         <h1 className='text-xl font-semibold'>Task tracker</h1>
-        <Button text='Add' onClick={onShow} />
+        <Button onClick={onShow} text={showAddTasks ? 'Close' : 'Add'} color={showAddTasks ? 'bg-red-500' : 'bg-green-500'}/>
     </header>
   )
 }
